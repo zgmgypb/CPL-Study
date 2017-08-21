@@ -1,4 +1,60 @@
 #include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+
+/* trim 函数：删除字符串尾部的空格符、制表符与换行符 */
+int tcpl_trim(char s[])
+{
+	int n;
+
+	for (n = strlen(s) - 1; n >= 0; n--) 
+		if (s[n] != ' ' && s[n] != '\t' && s[n] != '\n')
+			break;
+	s[n + 1] = '\0';
+	return n;
+}
+
+/* reverse 函数：倒置字符串 s 中各个字符的位置 */
+void tcpl_reverse(char s[])
+{
+	int c, i, j;
+
+	for (i = 0, j = strlen(s) - 1; i < j; i++, j--) {
+		c = s[i];
+		s[i] = s[j];
+		s[j] = c;
+	}
+}
+
+/* itoa 函数：将数字 n 转换为字符串并保存到 s 中 */
+void tcpl_itoa(int n, char s[])
+{
+	int i, sign;
+
+	if ((sign = n) < 0) 
+		n = -n;
+	i = 0;
+	do {
+		s[i++] = n % 10 + '0';
+	} while ((n / 10) > 0);
+	if (sign < 0)
+		s[i++] = '-';
+	tcpl_reverse(s);
+}
+
+/* shellsort 函数：按递增顺序对 v[0]...v[n-1] 进行排序 */
+void tcpl_shellsort(int v[], int n)
+{
+	int gap, i, j, temp;
+
+	for (gap = n/2; gap > 0; gap /= 2) 
+		for (i = gap; i < n; i++)
+			for (j = i - gap; j >= 0 && v[j] > v[j + gap]; j -= gap) {
+				temp = v[j];
+				v[j] = v[j + gap];
+				v[j + gap] = temp;
+			}
+}
 
 /* strlen 函数：返回 s 的长度 */
 int tcpl_strlen(char s[])
@@ -9,6 +65,20 @@ int tcpl_strlen(char s[])
 		i++;
 
 	return i;
+}
+
+/* atoi 函数：将字符串 s 转换为相应的整型数;版本2 */
+int tcpl_atoi2(char s[])
+{
+	int i, n, sign;
+
+	while (isspace(i)) i++;
+	sign = (s[i] == '-') ? -1 : 1;
+	if (s[i] == '+' || s[i] == '-')
+		i++;
+	for (n = 0; isdigit(s[i]); i++)
+		n = 10 * n + s[i] - '0';
+	return sign * n;
 }
 
 /* atoi 函数：将字符串 s 转换为相应的整型数 */
@@ -85,6 +155,34 @@ void tcpl_srand(unsigned int seed)
 	tcpl_snext = seed;
 }
 
+#define MAXLINE 1000
+/* getline 函数：将行保存到 s 中，并返回该行的长度 */
+int tcpl_getline(char s[], int lim)
+{
+	int c, i;
+
+	i = 0;
+	while (--lim > 0 && (c = getchar()) != EOF && c != '\n') 
+		s[i++] = c;
+	if (c == '\n')
+		s[i++] = c;
+	s[i] = '\0';
+	return i;
+}
+
+/* strindex 函数：返回 t 在 s 中的位置，若未找到则返回 -1 */
+int tcpl_strindex(char s[], char t[])
+{
+	int i, j, k;
+
+	for (i = 0; s[i] != '\0'; i++) {
+		for (j = i, k = 0; t[k] != '\0' && s[j] == t[k]; j++, k++);
+		if (k > 0 && t[k] == '\0')
+			return i;
+	}
+	return -1;
+}
+
 #define IN 1 /* 单词内 */
 #define OUT 0 /* 单词外 */
 int main(int argc, char *argv[])
@@ -115,7 +213,7 @@ int main(int argc, char *argv[])
 
 	printf ("%ld %ld %ld\n", nl, nw, nc);
 #endif
-#if 1
+#if 0
 	char a = 0xfe;
 	signed char b = 0xfd;
 	unsigned char c = 0xfd;
@@ -124,5 +222,18 @@ int main(int argc, char *argv[])
 	printf ("a = 0x%x, b = 0x%x, c = 0x%x \n", (unsigned)a, (unsigned)b, c);
 	printf ("a + b + c = 0x%x\n", a + b + c);
 	printf ("a + b + c = 0x%x\n", (unsigned)a + (unsigned)b + c);
+#endif
+
+#if 1
+	char pattern[] = "ould";
+	char line[MAXLINE];
+	int found = 0;
+	
+	while (tcpl_getline(line, MAXLINE))
+		if (tcpl_strindex(line, pattern) >= 0) {
+			printf ("%s", line);
+			found ++;
+		}
+	return found;
 #endif
 }
